@@ -97,4 +97,4 @@ if st.button("추천 보기 👍"):
 st.caption("※ 이 추천은 성향 기반의 일반적 제안이야. 진로 결정은 실습・체험・멘토링을 통해 확인하길 권해.")
 
 st.write("\n")
-st.markdown("**설치 필요 없음** — Streamlit만 있으면 돼요. 로컬에서 실행: `streamlit run streamlit_mbti_app.py`\n\nStreamlit Cloud 배포 방법: 깃허브에 이 파일 올리고 Streamlit에 리포 연결하면 끝! (requirements.txt에 `streamlit` 한 줄만 적으면 자동 설치됩니다.)")
+
