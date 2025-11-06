@@ -78,7 +78,7 @@ MBTI_CAREERS = {
 st.set_page_config(page_title="MBTI 진로 추천 (대장 전용)", layout="centered")
 
 st.title("🔎 MBTI로 보는 진로 추천")
-st.markdown("대장, 안녕! 아래에서 MBTI 유형을 선택하면 해당 유형에 어울리는 **진로 2가지**, **추천 학과**, 그리고 **어떤 성격**이 잘 맞는지 보여줄게. 이걸로 진로 아이디어를 얻어봐~ 😄")
+st.markdown("친구, 안녕! 아래에서 MBTI 유형을 선택하면 해당 유형에 어울리는 **진로 2가지**, **추천 학과**, 그리고 **어떤 성격**이 잘 맞는지 보여줄게. 이걸로 진로 아이디어를 얻어봐~ 😄")
 
 mbti = st.selectbox("MBTI 유형을 골라줘 (예: ISFP)", MBTI_LIST)
 
