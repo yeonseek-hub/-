@@ -116,3 +116,13 @@ if st.button("추천 보기 🎯"):
         st.subheader("🎬 영화 추천")
         for movie, reason in mbti_recommendations[mbti_choice]["movies"]:
             st.write(f"- **{movie}**: {reason}")
+            
+# 줄거리 요약 버튼
+if st.button("줄거리 요약 보기 📝"):
+    if mbti_choice:
+        st.subheader("📚 책 줄거리 요약")
+        for book, plot in mbti_recommendations[mbti_choice]["books"]:
+            st.write(f"- **{book}**: {plot}")
+        st.subheader("🎬 영화 줄거리 요약")
+        for movie, plot in mbti_recommendations[mbti_choice]["movies"]:
+            st.write(f"- **{movie}**: {plot}")
