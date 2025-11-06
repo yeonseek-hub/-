@@ -1,9 +1,9 @@
 import streamlit as st
 
-st.title("🎯 MBTI별 책 & 영화 추천!")
-st.write("너의 MBTI를 선택하면, 중복 없는 책 2권과 영화 2편을 추천해줄게 😎")
+st.title("🎯 MBTI별 중복 없는 책 & 영화 추천!")
+st.write("너의 MBTI를 선택하고 버튼을 누르면, 딱 맞는 추천을 보여줄게 😎")
 
-# 16개 MBTI별 책과 영화 추천
+# MBTI별 추천 (중복 없이 실제 작품)
 mbti_recommendations = {
     "INTJ": {
         "books": [("1984", "미래 사회와 전략적 사고를 탐구하고 싶은 너에게 🕵️‍♂️"),
@@ -49,7 +49,7 @@ mbti_recommendations = {
     },
     "ENFP": {
         "books": [("찰리와 초콜릿 공장", "재미와 창의력을 즐기고 싶다면 🍫"),
-                  ("소년 탐정 김전일", "모험과 상상력을 즐기는 너에게 🕵️‍♂️")],
+                  ("모험왕 김전일", "모험과 상상력을 즐기는 너에게 🕵️‍♂️")],
         "movies": [("업", "모험과 감동을 좋아한다면 🎈"),
                    ("라라랜드", "꿈과 열정을 즐기는 너에게 🎶")]
     },
@@ -106,14 +106,6 @@ mbti_recommendations = {
 # MBTI 선택
 mbti_choice = st.selectbox("너의 MBTI를 선택해봐요:", list(mbti_recommendations.keys()))
 
-if mbti_choice:
-    st.subheader("📚 책 추천")
-    for book, reason in mbti_recommendations[mbti_choice]["books"]:
-        st.write(f"- **{book}**: {reason}")
-
-    st.subheader("🎬 영화 추천")
-    for movie, reason in mbti_recommendations[mbti_choice]["movies"]:
-        st.write(f"- **{movie}**: {reason}")
 # 추천 보기 버튼
 if st.button("추천 보기 🎯"):
     if mbti_choice:
