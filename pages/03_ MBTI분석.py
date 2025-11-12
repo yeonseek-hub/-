@@ -57,8 +57,3 @@ st.plotly_chart(fig, use_container_width=True)
 # ===== 데이터 보기 =====
 with st.expander("📄 원본 데이터 보기"):
     st.dataframe(df)
-
-# ===== 리콰이어먼트 파일 내용 안내 =====
-st.markdown("---")
-st.markdown("### 📦 requirements.txt")
-st.code("""streamlit==1.40.0\npandas==2.2.3\nplotly==5.24.1""")
