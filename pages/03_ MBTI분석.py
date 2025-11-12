@@ -62,37 +62,3 @@ with st.expander("📄 원본 데이터 보기"):
 st.markdown("---")
 st.markdown("### 📦 requirements.txt")
 st.code("""streamlit==1.40.0\npandas==2.2.3\nplotly==5.24.1""")
-import streamlit as st
-
-st.title("국가 선택 버튼 🌏")
-st.write("버튼을 눌러 국가를 선택하세요.")
-
-countries = [
-    "Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda",
-    "Argentina","Armenia","Australia","Austria","Azerbaijan","Bahamas","Bahrain",
-    "Bangladesh","Barbados","Belarus","Belgium","Belize","Bhutan",
-    "Bosnia and Herzegovina","Botswana","Brazil","Brunei","Bulgaria","Burkina Faso",
-    "Cambodia","Cameroon","Canada","Chile","China","Colombia","Congo","Costa Rica",
-    "Croatia","Cuba","Cyprus","Czech Republic","Congo (Kinshasa)","Denmark","Djibouti",
-    "Dominica","Dominican Republic","Ecuador","Egypt","El Salvador","Estonia","Ethiopia",
-    "Faroe Islands","Fiji","Finland","France","Georgia","Germany","Ghana","Greece",
-    "Grenada","Guatemala","Guinea","Guyana","Haiti","Honduras","Hungary","Iceland",
-    "India","Indonesia","Iraq","Ireland","Israel","Italy","Jamaica","Japan","Jordan",
-    "Kazakhstan","Kenya","Kuwait","Kyrgyzstan","Laos","Latvia","Lebanon","Lesotho",
-    "Libya","Lithuania","Luxembourg","Madagascar","Malawi","Malaysia","Maldives","Mali",
-    "Malta","Mauritius","Mexico","Monaco","Mongolia","Montenegro","Morocco","Mozambique",
-    "Myanmar","Namibia","Nepal","Netherlands","New Zealand","Nicaragua","Niger","Nigeria",
-    "Macedonia","Norway","Oman","Pakistan","Panama","Papua New Guinea","Paraguay","Peru",
-    "Philippines","Poland","Portugal","Qatar","South Korea","Moldova","Romania","Russia",
-    "Rwanda","Saint Kitts and Nevis","Saint Lucia","Saint Vincent and the Grenadines",
-    "Saudi Arabia","Senegal","Serbia","Seychelles","Singapore","Slovakia","Slovenia",
-    "Somalia","South Africa","Spain","Sri Lanka","Sudan","Suriname","Sweden","Switzerland",
-    "Syria","Tajikistan","Thailand","Trinidad and Tobago","Tunisia","Turkey","Uganda",
-    "Ukraine","United Arab Emirates","United Kingdom","Tanzania","United States","Uruguay",
-    "Uzbekistan","Vanuatu","Vietnam","Yemen","Zambia","Zimbabwe"
-]
-
-# 버튼 생성
-for country in countries:
-    if st.button(country):
-        st.write(f"{country} 선택됨")
