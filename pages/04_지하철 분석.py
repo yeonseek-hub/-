@@ -34,14 +34,15 @@ else:
     # 총승객 기준 내림차순 정렬
     filtered = filtered.sort_values("총승객", ascending=False).reset_index(drop=True)
 
-    # 색상 설정: 1등 빨강, 나머지는 파란색 그라데이션
+    # --- 컬럼 기반 색상 설정: 1등 빨강, 나머지 파란색 그라데이션 ---
     n = len(filtered)
-    colors = ["red"]
+    filtered['색상'] = ""
+    if n > 0:
+        filtered.loc[0, '색상'] = 'red'  # 1등 빨강
     if n > 1:
-        blue_colors = px.colors.sequential.Blues  # Plotly 기본 블루 계열
-        # n-1개에 맞춰 균등 분할
+        blue_colors = px.colors.sequential.Blues
         indices = np.linspace(0, len(blue_colors)-1, n-1, dtype=int)
-        colors += [blue_colors[i] for i in indices]
+        filtered.loc[1:, '색상'] = [blue_colors[i] for i in indices]
 
     # 그래프
     fig = px.bar(
@@ -49,8 +50,8 @@ else:
         x="역명",
         y="총승객",
         title=f"📊 {selected_date} / {selected_line} 승하차 총합 순위",
-        color_discrete_sequence=colors,
-        text="총승객"  # 막대 위 숫자 표시
+        color="색상",  # 컬럼 기반 색상
+        text="총승객"
     )
 
     fig.update_layout(
