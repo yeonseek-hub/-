@@ -1,7 +1,8 @@
+
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import numpy as np
+from matplotlib import cm
 
 # 페이지 설정
 st.set_page_config(page_title="🚇 2025년 10월 지하철 승하차 분석", layout="wide")
@@ -33,15 +34,15 @@ else:
     # 총승객 기준 내림차순 정렬
     filtered = filtered.sort_values("총승객", ascending=False).reset_index(drop=True)
 
-    # 색상 설정
+    # 색상 설정: 1등 빨강, 나머지는 파란색 그라데이션
     n = len(filtered)
-    blue_gradient = px.colors.sequential.Blues  # 기본 파란색 그라데이션
+    colors = ["red"]
     if n > 1:
-        # 1등 빨강, 나머지는 그라데이션
-        gradient_indices = np.linspace(0, len(blue_gradient)-1, n-1)
-        colors = ["red"] + [blue_gradient[int(i)] for i in gradient_indices]
-    else:
-        colors = ["red"]
+        blue_cmap = cm.get_cmap("Blues", n-1)  # matplotlib 블루 컬러맵
+        for i in range(n-1):
+            rgb = blue_cmap(i)[:3]  # rgba -> rgb
+            hex_color = '#%02x%02x%02x' % tuple(int(255*x) for x in rgb)
+            colors.append(hex_color)
 
     # 그래프
     fig = px.bar(
