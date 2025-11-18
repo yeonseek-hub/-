@@ -49,3 +49,11 @@ fig.update_layout(
 st.plotly_chart(fig, use_container_width=True)
 
 st.write(f"🔍 총 {len(filtered)}개 역이 검색되었습니다.")
+import plotly.express as px
+
+blues = px.colors.sequential.Blues
+n = len(filtered)
+
+# 색상 범위 제한
+color_list = ["red"] + [blues[i % len(blues)] for i in range(n - 1)]
+
