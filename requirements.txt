@@ -5,6 +5,3 @@ streamlit-folium
 geopy
 pandas
 plotly
-streamlit
-pandas
-plotly
