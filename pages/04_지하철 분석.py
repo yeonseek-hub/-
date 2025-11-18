@@ -2,7 +2,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from matplotlib import cm
+import numpy as np
 
 # 페이지 설정
 st.set_page_config(page_title="🚇 2025년 10월 지하철 승하차 분석", layout="wide")
@@ -38,11 +38,10 @@ else:
     n = len(filtered)
     colors = ["red"]
     if n > 1:
-        blue_cmap = cm.get_cmap("Blues", n-1)  # matplotlib 블루 컬러맵
-        for i in range(n-1):
-            rgb = blue_cmap(i)[:3]  # rgba -> rgb
-            hex_color = '#%02x%02x%02x' % tuple(int(255*x) for x in rgb)
-            colors.append(hex_color)
+        blue_colors = px.colors.sequential.Blues  # Plotly 기본 블루 계열
+        # n-1개에 맞춰 균등 분할
+        indices = np.linspace(0, len(blue_colors)-1, n-1, dtype=int)
+        colors += [blue_colors[i] for i in indices]
 
     # 그래프
     fig = px.bar(
