@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import itertools
 
 st.set_page_config(page_title="지하철 승하차 분석", layout="wide")
 
@@ -22,38 +23,33 @@ selected_line = st.selectbox("🚈 호선을 선택하세요", sorted(df['노선
 # 필터링
 filtered = df[(df['사용일자'] == selected_date) & (df['노선명'] == selected_line)].copy()
 
-# 합산 컬럼 추가
-filtered["총승객"] = filtered["승차총승객수"] + filtered["하차총승객수"]
+if filtered.empty:
+    st.warning("선택한 날짜와 호선에 데이터가 없습니다.")
+else:
+    # 합산 컬럼 추가
+    filtered["총승객"] = filtered["승차총승객수"] + filtered["하차총승객수"]
 
-# 정렬
-filtered = filtered.sort_values("총승객", ascending=False)
+    # 정렬
+    filtered = filtered.sort_values("총승객", ascending=False)
 
-# 색상 설정 (1등 = 빨강, 나머지 = 파랑 그라데이션)
-colors = ["red"] + px.colors.sequential.Blues[len(filtered) - 1]
+    # 색상 설정 (1등 = 빨강, 나머지 = 파랑 계열 반복)
+    base_colors = px.colors.sequential.Blues
+    colors = ["red"] + list(itertools.islice(itertools.cycle(base_colors), len(filtered)-1))
 
-# 그래프
-fig = px.bar(
-    filtered,
-    x="역명",
-    y="총승객",
-    title=f"📊 {selected_date} / {selected_line} 승하차 총합 순위",
-    color_discrete_sequence=colors
-)
+    # 그래프
+    fig = px.bar(
+        filtered,
+        x="역명",
+        y="총승객",
+        title=f"📊 {selected_date} / {selected_line} 승하차 총합 순위",
+        color_discrete_sequence=colors
+    )
 
-fig.update_layout(
-    xaxis_title="역명",
-    yaxis_title="승차+하차 총합",
-    template="simple_white"
-)
+    fig.update_layout(
+        xaxis_title="역명",
+        yaxis_title="승차+하차 총합",
+        template="simple_white"
+    )
 
-st.plotly_chart(fig, use_container_width=True)
-
-st.write(f"🔍 총 {len(filtered)}개 역이 검색되었습니다.")
-import plotly.express as px
-
-blues = px.colors.sequential.Blues
-n = len(filtered)
-
-# 색상 범위 제한
-color_list = ["red"] + [blues[i % len(blues)] for i in range(n - 1)]
-
+    st.plotly_chart(fig, use_container_width=True)
+    st.write(f"🔍 총 {len(filtered)}개 역이 검색되었습니다.")
