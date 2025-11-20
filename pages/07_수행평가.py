@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -60,7 +61,6 @@ with st.sidebar:
 
     # 2. TOP N 개수 선택 (버튼 형식 - st.radio 사용)
     st.subheader("2️⃣ 표시할 범죄 유형 개수 (TOP N)")
-    # horizontal=True를 사용하여 버튼을 가로로 배열
     top_n = st.radio(
         "선택",
         options=[5, 10, 15, 20],
@@ -68,7 +68,6 @@ with st.sidebar:
         horizontal=True
     )
     
-    # top_n이 문자열로 반환될 수 있으므로, 확실하게 정수로 변환
     top_n = int(top_n) 
     
     st.markdown("---")
@@ -114,7 +113,7 @@ if selected_district:
 
 st.markdown("---")
 
-# --- 4. 추가 기능 1: 지역별 총 범죄 건수 비교 랭킹 ---
+# --- 4. 추가 기능 1: 지역별 총 범죄 건수 비교 랭킹 (수정됨) ---
 
 st.header("📈 지역별 범죄 발생량 비교 랭킹")
 
@@ -129,8 +128,14 @@ selected_rank = total_crime_by_district[total_crime_by_district['지역'] == sel
 
 st.info(f"선택하신 **{selected_district}**의 총 범죄 발생 건수는 전체 지역 중 **{selected_rank}위** 입니다.")
 
-# 3. 랭킹 시각화 (Top N 또는 전체)
-comparison_n = st.slider("비교하여 보여줄 지역 개수", 10, len(all_districts), 20)
+# 3. 랭킹 시각화: 슬라이더 기본값을 10으로 설정
+comparison_n = st.slider(
+    "비교하여 보여줄 지역 개수", 
+    min_value=10, # 최소값을 10으로 고정
+    max_value=len(all_districts), 
+    value=10, # 기본값을 10으로 설정
+    step=5
+)
 
 fig_rank = px.bar(
     total_crime_by_district.head(comparison_n),
@@ -158,7 +163,6 @@ with tabs[0]: # 📊 대분류 내 세부 비교
     
     st.subheader("1️⃣ 대분류 내 중분류별 건수 비교")
     
-    # Top N에 포함된 범죄 유형을 선택 (Selectbox 유지)
     selected_sub_crime = st.selectbox(
         "세부 분석을 원하는 범죄 유형 (중분류)을 선택하세요.",
         options=top_n_crime['범죄중분류'].tolist(),
@@ -166,19 +170,16 @@ with tabs[0]: # 📊 대분류 내 세부 비교
     )
 
     if selected_sub_crime:
-        # 선택된 '범죄중분류'가 속한 '범죄대분류' 찾기
         major_category_row = data_df[data_df['범죄중분류'] == selected_sub_crime].head(1)
         if not major_category_row.empty:
             major_category = major_category_row['범죄대분류'].iloc[0]
             
             st.info(f"선택 유형 '**{selected_sub_crime}**'는 **'{major_category}'**에 속합니다.")
 
-            # 해당 '범죄대분류'에 속하는 모든 '범죄중분류' 데이터를 필터링 및 집계
             detail_data = data_df[data_df['범죄대분류'] == major_category].copy()
             detail_grouped = detail_data.groupby('범죄중분류')[selected_district].sum().reset_index()
             detail_grouped = detail_grouped.sort_values(by=selected_district, ascending=False)
             
-            # 세부 막대 그래프 표시
             fig_detail = px.bar(
                 detail_grouped,
                 x=selected_district,
@@ -194,11 +195,10 @@ with tabs[0]: # 📊 대분류 내 세부 비교
             st.plotly_chart(fig_detail, use_container_width=True)
 
 
-with tabs[1]: # 🌎 유형별 지역 비교 (추가 기능)
+with tabs[1]: # 🌎 유형별 지역 비교
     
     st.subheader("2️⃣ 특정 범죄 유형의 지역별 비교")
 
-    # 모든 범죄 유형 목록 생성 (Selectbox 유지)
     all_crime_types = data_df['범죄중분류'].unique()
 
     compare_crime = st.selectbox(
@@ -208,23 +208,21 @@ with tabs[1]: # 🌎 유형별 지역 비교 (추가 기능)
     )
 
     if compare_crime:
-        # 1. 선택된 범죄 유형 데이터 필터링
         compare_data_row = data_df[data_df['범죄중분류'] == compare_crime].copy()
         
-        # 2. 지역별 건수로 데이터 변환 (Transpose)
         compare_df = compare_data_row[all_districts].T.sum(axis=1).reset_index()
         compare_df.columns = ['지역', '발생_건수']
         compare_df = compare_df.sort_values(by='발생_건수', ascending=False)
 
-        # 3. 막대 그래프 생성
+        # Top 20만 표시
         fig_comp = px.bar(
-            compare_df.head(20), # Top 20만 표시
+            compare_df.head(20), 
             x='발생_건수',
             y='지역',
             orientation='h',
             title=f"**{compare_crime}** 발생 건수 지역별 비교 (Top 20)",
             color='지역',
-            color_discrete_map={selected_district: '#0077b6'}, # 선택한 지역 강조 색상
+            color_discrete_map={selected_district: '#0077b6'}, 
             labels={'발생_건수': '발생 건수 (건)', '지역': '지역'},
         )
         fig_comp.update_layout(yaxis={'categoryorder': 'total ascending'}, height=600)
