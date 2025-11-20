@@ -12,15 +12,16 @@ st.caption("👈 왼쪽 사이드바에서 분석할 지역(구)을 선택해주
 @st.cache_data
 def load_data(file_path):
     """CSV 파일을 로드하고 필요한 전처리를 수행합니다."""
-    # 다양한 한글 인코딩 시도 (Streamlit Cloud 환경에서 인코딩 문제 방지)
     encodings = ['cp949', 'euc-kr', 'utf-8']
+    df = None
     for encoding in encodings:
         try:
             df = pd.read_csv(file_path, encoding=encoding)
             break
         except:
             continue
-    else:
+    
+    if df is None:
         raise Exception("파일을 로드할 수 없습니다. 인코딩을 확인해주세요.")
 
     # '범죄대분류', '범죄중분류' 열을 제외한 나머지가 구 이름 열입니다.
@@ -44,16 +45,13 @@ except Exception as e:
 
 # 구 이름 목록 추출 및 정리
 all_districts = data_df.columns.drop(['범죄대분류', '범죄중분류']).tolist()
-# '서울', '부산' 등 시/도 이름이 붙어있는 경우를 고려하여, 선택 시 표시될 이름과 실제 컬럼 이름을 매핑합니다.
-district_mapping = {col: col for col in all_districts}
 
 
 # --- 2. 사이드바 설정 (사용자 입력: 구 이름 선택) ---
 
 st.sidebar.header("🗺️ 지역 선택")
 
-# 구 이름 선택 드롭다운
-# 사용자가 구 이름을 선택하는 부분입니다.
+# **핵심: 구 이름 선택 드롭다운**
 selected_district = st.sidebar.selectbox(
     "범죄 현황을 분석할 **구 이름**을 선택하세요.",
     options=all_districts
@@ -63,60 +61,98 @@ selected_district = st.sidebar.selectbox(
 top_n = st.sidebar.slider("표시할 범죄 유형 개수 (TOP N)", 5, 20, 10)
 
 
-# --- 3. 데이터 분석 및 시각화 ---
+# --- 3. 데이터 분석 및 시각화 (기본 막대 그래프) ---
 
 if selected_district:
     
     st.subheader(f"📍 선택 지역: **{selected_district}**")
     
     # 선택된 지역의 범죄 데이터 추출 및 집계
-    crime_data = data_df[['범죄중분류', selected_district]].copy()
-    
-    # '범죄중분류'별로 발생 건수 합산
-    grouped_crime = crime_data.groupby('범죄중분류').sum().reset_index()
-    
-    # 발생 건수를 기준으로 내림차순 정렬
+    crime_data = data_df[['범죄중분류', '범죄대분류', selected_district]].copy()
+    grouped_crime = crime_data.groupby('범죄중분류')[selected_district].sum().reset_index()
     sorted_crime = grouped_crime.sort_values(by=selected_district, ascending=False)
     
-    # 총 범죄 발생 건수 계산
     total_crime_count = sorted_crime[selected_district].sum()
-    
-    # 요약 정보 표시
     st.metric(label="총 범죄 발생 건수 (2023년)", value=f"{total_crime_count:,} 건")
 
-    # 상위 N개 범죄 유형 선택
     top_n_crime = sorted_crime.head(top_n)
 
-    # 4. 막대 그래프 생성
     if not top_n_crime.empty:
-        
-        # Plotly를 사용하여 막대 그래프 생성
+        # Plotly 막대 그래프 생성
         fig = px.bar(
             top_n_crime,
             x=selected_district,
             y='범죄중분류',
-            orientation='h',  # 수평 막대 그래프
-            title=f"**{selected_district}** - 범죄 발생 건수 Top {top_n} 유형",
+            orientation='h',
+            title=f"**{selected_district}** - 범죄 발생 건수 Top {top_n} 유형 (클릭 대신 선택 기능)",
             labels={selected_district: '발생 건수 (건)', '범죄중분류': '범죄 유형'},
             color=selected_district, 
             color_continuous_scale=px.colors.sequential.Plotly3,
         )
         
-        # 그래프 레이아웃 및 정렬 설정
         fig.update_layout(
-            yaxis={'categoryorder': 'total ascending'}, # 건수가 많은 순으로 Y축 정렬
+            yaxis={'categoryorder': 'total ascending'},
             margin=dict(l=20, r=20, t=50, b=20),
             height=600
         )
-        
-        # 그래프 출력
         st.plotly_chart(fig, use_container_width=True)
         
-        st.markdown("---")
-        st.subheader(f"데이터 테이블 (Top {top_n})")
-        st.dataframe(top_n_crime, use_container_width=True)
     else:
         st.warning("선택하신 지역에 대한 범죄 데이터가 없거나 0건입니다.")
+
+
+# --- 4. 심층 분석 (Drill-Down) 기능 구현 ---
+
+if not top_n_crime.empty:
+    st.markdown("---")
+    st.subheader("🔍 선택한 범죄 유형의 **대분류 기준** 세부 분석")
+    st.markdown("Top N 그래프에 표시된 범죄 유형 중 하나를 선택하면, 그 범죄가 속한 **대분류**의 모든 세부 유형(중분류)을 분석합니다.")
+
+    # 1. 사용자가 Top N에 포함된 범죄 유형을 선택
+    selected_sub_crime = st.selectbox(
+        "세부 분석을 원하는 범죄 유형 (중분류)을 선택하세요.",
+        options=top_n_crime['범죄중분류'].tolist(),
+        index=0 # 기본값으로 가장 많이 발생한 범죄 선택
+    )
+
+    # 2. 선택된 '범죄중분류'가 속한 '범죄대분류' 찾기
+    # data_df에서 해당 '범죄중분류'의 '범죄대분류'를 찾습니다.
+    major_category_row = data_df[data_df['범죄중분류'] == selected_sub_crime].head(1)
+    if not major_category_row.empty:
+        major_category = major_category_row['범죄대분류'].iloc[0]
+        
+        st.info(f"선택 유형 '**{selected_sub_crime}**'는 **'{major_category}'**에 속하며, 같은 대분류의 다른 세부 유형을 확인합니다.")
+
+        # 3. 해당 '범죄대분류'에 속하는 모든 '범죄중분류' 데이터를 필터링 및 집계
+        detail_data = data_df[data_df['범죄대분류'] == major_category].copy()
+        detail_grouped = detail_data.groupby('범죄중분류')[selected_district].sum().reset_index()
+        detail_grouped = detail_grouped.sort_values(by=selected_district, ascending=False)
+        
+        st.subheader(f"'{major_category}' 대분류의 모든 세부 유형 ({selected_district})")
+        
+        # 4. 결과 데이터프레임 표시
+        st.dataframe(
+            detail_grouped, 
+            column_order=['범죄중분류', selected_district],
+            hide_index=True,
+            use_container_width=True
+        )
+        
+        # 5. 세부 막대 그래프 표시
+        fig_detail = px.bar(
+            detail_grouped,
+            x=selected_district,
+            y='범죄중분류',
+            orientation='h',
+            title=f"'{major_category}' 대분류 내 중분류별 건수 비교",
+            labels={selected_district: '발생 건수 (건)', '범죄중분류': '범죄 유형'},
+            color=selected_district, 
+            color_continuous_scale=px.colors.sequential.Agsunset,
+        )
+        
+        fig_detail.update_layout(yaxis={'categoryorder': 'total ascending'}, height=max(400, len(detail_grouped) * 35))
+        st.plotly_chart(fig_detail, use_container_width=True)
+
 
 # --- 5. 데이터 출처 및 정보 ---
 st.sidebar.markdown("---")
